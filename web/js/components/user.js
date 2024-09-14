@@ -27,7 +27,7 @@ export class User {
                 const thead = document.createElement('thead');
                 thead.innerHTML = `
             <tr>
-                <th>Username</th>
+                <th>Nickname</th>
                 <th>Email</th>
                 <th>Role</th>
             </tr>
@@ -37,7 +37,7 @@ export class User {
                 users.forEach(user => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                <td>${user.username}</td>
+                <td>${user.nickname}</td>
                 <td>${user.email}</td>
               `;
                     const type = document.createElement('td');

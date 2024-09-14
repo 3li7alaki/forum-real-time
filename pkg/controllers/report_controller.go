@@ -86,7 +86,7 @@ func CreateReport(w http.ResponseWriter, r *http.Request) {
 
 	notification := &models.Notification{
 		UserID:   1,
-		Text:     fmt.Sprintf("New report from moderator %s", user.Username),
+		Text:     fmt.Sprintf("New report from moderator %s", user.Nickname),
 		SenderID: user.ID,
 		Type:     consts.REPORT,
 		LinkID:   report.ID,

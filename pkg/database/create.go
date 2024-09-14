@@ -15,6 +15,7 @@ func CreateTables() error {
 		&models.PostCategory{},
 		&models.Report{},
 		&models.Notification{},
+		&models.Message{},
 	}
 
 	for _, model := range models {

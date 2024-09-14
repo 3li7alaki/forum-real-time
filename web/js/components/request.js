@@ -29,7 +29,7 @@ export class Request {
                 const thead = document.createElement('thead');
                 thead.innerHTML = `
             <tr>
-                <th>Username</th>
+                <th>Nickname</th>
                 <th>Email</th>
                 <th>Actions</th>
             </tr>
@@ -39,7 +39,7 @@ export class Request {
                 requests.forEach(request => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                <td>${request.username}</td>
+                <td>${request.nickname}</td>
                 <td>${request.email}</td>
               `;
                     const actions = document.createElement('td');

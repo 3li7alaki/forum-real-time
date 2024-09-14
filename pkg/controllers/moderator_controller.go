@@ -60,7 +60,7 @@ func RequestModerator(w http.ResponseWriter, r *http.Request) {
 
 	notification := models.Notification{
 		UserID:   1,
-		Text:     fmt.Sprintf("%s has requested to be a moderator", user.Username),
+		Text:     fmt.Sprintf("%s has requested to be a moderator", user.Nickname),
 		SenderID: user.ID,
 		Type:     consts.USER,
 		LinkID:   user.ID,

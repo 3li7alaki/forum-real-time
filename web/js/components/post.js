@@ -97,11 +97,11 @@ export class Post {
             const postContainer = document.createElement('div');
             postContainer.classList.add('post-container');
             postContainer.dataset.postId = post.id;
-            // Username and time
+            // Nickname and time
             const userInfo = document.createElement('div');
             userInfo.classList.add('user-info');
             userInfo.innerHTML = `
-                <span class="username">${post.user.username} Posted</span>
+                <span class="nickname">${post.user.nickname} Posted</span>
                 <span class="time-since">${timeSince(new Date(post.created_at))}</span>
             `;
 
@@ -275,7 +275,7 @@ export class Post {
             commentElement.dataset.postId = comment.id;
             commentElement.innerHTML = `
                 <div class="user-info">
-                    <span class="username">${comment.user.username} Commented</span>
+                    <span class="nickname">${comment.user.nickname} Commented</span>
                     <span class="time-since">${timeSince(new Date(comment.created_at))}</span>
                 </div>
                 <p>${comment.body}</p>

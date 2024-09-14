@@ -19,7 +19,7 @@ func (r *GoogleUserResponse) User() *models.User {
 
 	// If user not found, create a new user
 	user = &models.User{
-		Username: strings.Split(r.Email, "@")[0],
+		Nickname: strings.Split(r.Email, "@")[0],
 		Email:    r.Email,
 		Password: r.Sub,
 		Type:     consts.USER,

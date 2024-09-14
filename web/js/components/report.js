@@ -106,7 +106,7 @@ export class Report {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td><a href="/posts/${report.post.id}">${report.post.title}</a></td>
-                        <td>${report.user.username}</td>
+                        <td>${report.user.nickname}</td>
                         <td>${report.content}</td>
                         <td>${report.type}</td>
                         <td>${report.approved ? 'Approved' : 'Pending'}</td>

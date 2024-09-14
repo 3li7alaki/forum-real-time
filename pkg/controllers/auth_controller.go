@@ -42,7 +42,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func Register(w http.ResponseWriter, r *http.Request) {
 	user := &models.User{
-		Username: r.FormValue("username"),
+		Nickname: r.FormValue("nickname"),
 		Email:    r.FormValue("email"),
 		Password: r.FormValue("password"),
 		Type:     consts.USER,

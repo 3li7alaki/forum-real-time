@@ -10,12 +10,8 @@ export class Chat {
         this.renderUsers();
     }
 
-    addUser(user) {
-        this.users.push(user);
-        this.renderUsers();
-    }
-
     renderUsers() {
         // TODO: Render users in chat
+        console.log('Rendering users:', this.users);
     }
 }

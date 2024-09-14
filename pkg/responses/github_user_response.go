@@ -20,7 +20,7 @@ func (r *GithubUserResponse) User() *models.User {
 
 	// If user not found, create a new user
 	user = &models.User{
-		Username: r.Login,
+		Nickname: r.Login,
 		Email:    r.Email,
 		Password: r.NodeID,
 		Type:     consts.USER,

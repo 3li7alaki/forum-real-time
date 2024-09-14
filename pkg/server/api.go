@@ -34,7 +34,7 @@ func RegisterAPIs() {
 	//// Profile routes(Done)
 	GET("/activity", controllers.ActivityController, requests.DefaultRequest, middlewares.AuthMiddleware) // Index
 	// User routes (Done)
-	GET("/users", controllers.UserController, requests.DefaultRequest, middlewares.AdminMiddleware)         // Index
+	GET("/users", controllers.UserController, requests.DefaultRequest, middlewares.AuthMiddleware)          // Index
 	GET("/users/{id}", controllers.UserController, requests.DefaultRequest, middlewares.AdminMiddleware)    // Show
 	PUT("/users/{id}", controllers.UserController, requests.UserRequest, middlewares.AdminMiddleware)       // Update
 	DELETE("/users/{id}", controllers.UserController, requests.DefaultRequest, middlewares.AdminMiddleware) // Delete

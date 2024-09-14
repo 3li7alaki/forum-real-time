@@ -22,7 +22,7 @@ func Init() {
 	}
 
 	admin := &models.User{
-		Username: "admin",
+		Nickname: "admin",
 		Password: "admin",
 		Email:    "admin@formhub.com",
 		Type:     "admin",

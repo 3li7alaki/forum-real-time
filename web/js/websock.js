@@ -1,6 +1,6 @@
 // websock.js
 
-import {ChatComponent} from "./components";
+import {ChatComponent} from "./components.js";
 
 export class WebSock {
     constructor() {
@@ -8,7 +8,11 @@ export class WebSock {
         this.socket = new WebSocket(`${secure ? 'wss' : 'ws'}://${window.location.host}/ws`);
 
         this.socket.onopen = () => {
-            console.log('Connected to server');
+            this.socket.send(JSON.stringify({
+                type: 'open',
+                content: '',
+                user_id: 1
+            }));
         };
 
         this.socket.onmessage = (event) => {
@@ -16,12 +20,7 @@ export class WebSock {
 
             // Type is users list
             if (data.type === 'users') {
-                ChatComponent.setUsers(data.users);
-            }
-
-            // Type is new user
-            if (data.type === 'new_user') {
-                ChatComponent.addUser(data.user);
+                ChatComponent.setUsers(data.content);
             }
 
             // Type is message

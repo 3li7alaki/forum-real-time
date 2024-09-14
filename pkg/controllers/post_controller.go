@@ -313,7 +313,7 @@ func InteractPost(w http.ResponseWriter, r *http.Request) {
 
 	notification := &models.Notification{
 		UserID:   post.UserID,
-		Text:     fmt.Sprintf("%s %s your post", user.Username, text),
+		Text:     fmt.Sprintf("%s %s your post", user.Nickname, text),
 		SenderID: user.ID,
 		Type:     consts.POST,
 		LinkID:   postID,
@@ -370,7 +370,7 @@ func CommentPost(w http.ResponseWriter, r *http.Request) {
 
 	notification := &models.Notification{
 		UserID:   post.UserID,
-		Text:     fmt.Sprintf("%s commented on your post", user.Username),
+		Text:     fmt.Sprintf("%s commented on your post", user.Nickname),
 		SenderID: user.ID,
 		Type:     consts.COMMENT,
 		LinkID:   comment.ID,

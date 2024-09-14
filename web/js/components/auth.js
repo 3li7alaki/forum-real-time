@@ -71,7 +71,7 @@ export class Auth {
     <h2>Register</h2>
     <form id="registerForm">
       <input type="email" id="email" required placeholder="Email">
-      <input type="text" id="username" required placeholder="Username">
+      <input type="text" id="nickname" required placeholder="Nickname">
       <input type="password" id="password" required placeholder="Password">
       <button type="submit">Register</button>
     </form>
@@ -82,10 +82,10 @@ export class Auth {
     async handleRegister(event) {
         event.preventDefault();
         const email = document.getElementById('email').value;
-        const username = document.getElementById('username').value;
+        const nickname = document.getElementById('nickname').value;
         const password = document.getElementById('password').value;
         try {
-            const user = await fetchAPI('/register', 'POST', { email, username, password });
+            const user = await fetchAPI('/register', 'POST', { email, nickname, password });
             setCurrentUser(user);
             Toastr.success('Registration successful');
             navigate('home');

@@ -5,7 +5,7 @@ import "net/http"
 func RegisterRequest(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rules := Rules{
-			"username": {"required", "min:3", "max:20", "unique:users,username"},
+			"nickname": {"required", "min:3", "max:20", "unique:users,nickname"},
 			"email":    {"required", "email", "unique:users,email"},
 			"password": {"required", "min:8", "password"},
 		}

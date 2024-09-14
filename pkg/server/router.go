@@ -20,4 +20,12 @@ func StartRouter() {
 
 	// Web fileserver
 	Router.Handle("/web/", http.StripPrefix("/web", http.FileServer(http.Dir("./web"))))
+
+	// Websocket
+	Router.HandleFunc("/ws", HandleSocks)
+
+	//go HandleRegister()
+	//go HandleMessages()
+	//go HandleUserUpdates()
+	//go HandleTyping()
 }

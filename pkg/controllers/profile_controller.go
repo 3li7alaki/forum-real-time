@@ -37,7 +37,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.Username = r.FormValue("username")
+	user.Nickname = r.FormValue("nickname")
 	user.Email = r.FormValue("email")
 	user.Password = r.FormValue("password")
 

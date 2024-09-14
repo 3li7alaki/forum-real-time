@@ -63,7 +63,7 @@ export class Main {
     renderHome() {
         this.content.innerHTML = '<h1>Welcome to the Forum</h1>';
         if (currentUser) {
-            this.content.innerHTML += `<p>Hello, ${currentUser.username}!</p>`;
+            this.content.innerHTML += `<p>Hello, ${currentUser.nickname}!</p>`;
         } else {
             this.content.innerHTML += '<p>Please login or register to participate in discussions.</p>';
         }

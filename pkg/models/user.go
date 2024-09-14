@@ -1,7 +1,9 @@
 package models
 
 import (
+	"database/sql"
 	"errors"
+	"fmt"
 	"forum/pkg/consts"
 	"strings"
 	"time"
@@ -11,7 +13,11 @@ import (
 
 type User struct {
 	ID        int    `json:"id"`
-	Username  string `json:"username"`
+	Nickname  string `json:"nickname"`
+	Age       int    `json:"age"`
+	Gender    string `json:"gender"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
 	Type      string `json:"type"`
@@ -20,20 +26,26 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	SessionUUID string `json:"session_uuid"`
+	SessionUUID    string     `json:"session_uuid"`
+	LastMessagedAt *time.Time `json:"last_messaged_at"`
 }
 
 func (u *User) CreateTable() error {
 	_, err := DB.Exec(`CREATE TABLE IF NOT EXISTS users (
 			id                 	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-			username           	VARCHAR(50) NOT NULL,
+			nickname           	VARCHAR(50) NOT NULL,
+			age                	INTEGER,
+			gender             	VARCHAR(20),
+			first_name         	VARCHAR(50),
+			last_name          	VARCHAR(50),
 			email           	VARCHAR(50) NOT NULL,
 			password            VARCHAR NOT NULL,
 			type           		VARCHAR NOT NULL,
     		requested           BOOLEAN DEFAULT FALSE,
     		created_at           DATETIME DEFAULT CURRENT_TIMESTAMP,
     		updated_at           DATETIME DEFAULT CURRENT_TIMESTAMP,
-			CONSTRAINT unique_email UNIQUE (email)
+			CONSTRAINT unique_email UNIQUE (email),
+			CONSTRAINT unique_nickname UNIQUE (nickname)
 	)`)
 	return err
 }
@@ -48,7 +60,7 @@ func (u *User) Index() ([]Model, error) {
 
 	for rows.Next() {
 		user := &User{}
-		err = rows.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Type, &user.Requested, &user.CreatedAt, &user.UpdatedAt)
+		err = rows.Scan(&user.ID, &user.Nickname, &user.Age, &user.Gender, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.Type, &user.Requested, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -75,7 +87,8 @@ func (u *User) Create() error {
 
 	u.Email = strings.ToLower(u.Email)
 
-	result, err := DB.Exec(`INSERT INTO users (username, email, password, type) VALUES (?, ?, ?, ?)`, u.Username, u.Email, u.Password, u.Type)
+	result, err := DB.Exec(`INSERT INTO users (nickname, age, gender, first_name, last_name, email, password, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		u.Nickname, u.Age, u.Gender, u.FirstName, u.LastName, u.Email, u.Password, u.Type)
 	if err != nil {
 		return err
 	}
@@ -105,14 +118,15 @@ func (u *User) Update() error {
 
 	u.Email = strings.ToLower(u.Email)
 
-	// Check if username and email are taken by another user
+	// Check if nickname and email are taken by another user
 	var id int
-	err = DB.QueryRow(`SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?`, u.Username, u.Email, u.ID).Scan(&id)
+	err = DB.QueryRow(`SELECT id FROM users WHERE (nickname = ? OR email = ?) AND id != ?`, u.Nickname, u.Email, u.ID).Scan(&id)
 	if err == nil {
-		return errors.New("username or email is already taken")
+		return errors.New("nickname or email is already taken")
 	}
 
-	_, err = DB.Exec(`UPDATE users SET username = ?, email = ?, password = ?, type = ?, requested = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, u.Username, u.Email, u.Password, u.Type, u.Requested, u.ID)
+	_, err = DB.Exec(`UPDATE users SET nickname = ?, age = ?, gender = ?, first_name = ?, last_name = ?, email = ?, password = ?, type = ?, requested = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+		u.Nickname, u.Age, u.Gender, u.FirstName, u.LastName, u.Email, u.Password, u.Type, u.Requested, u.ID)
 	if err != nil {
 		return err
 	}
@@ -134,7 +148,7 @@ func (u *User) Refresh() error {
 		return errors.New("user does not exist")
 	}
 
-	err := DB.QueryRow(`SELECT * FROM users WHERE id = ?`, u.ID).Scan(&u.ID, &u.Username, &u.Email, &u.Password, &u.Type, &u.Requested, &u.CreatedAt, &u.UpdatedAt)
+	err := DB.QueryRow(`SELECT * FROM users WHERE id = ?`, u.ID).Scan(&u.ID, &u.Nickname, &u.Age, &u.Gender, &u.FirstName, &u.LastName, &u.Email, &u.Password, &u.Type, &u.Requested, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		return errors.New("user does not exist")
 	}
@@ -175,14 +189,14 @@ func (u *User) ValidType() bool {
 func GetUserByEmail(email string) (*User, error) {
 	user := &User{}
 	email = strings.TrimSpace(strings.ToLower(email))
-	err := DB.QueryRow(`SELECT * FROM users WHERE email LIKE ?`, email).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Type, &user.Requested, &user.CreatedAt, &user.UpdatedAt)
+	err := DB.QueryRow(`SELECT * FROM users WHERE email LIKE ?`, email).Scan(&user.ID, &user.Nickname, &user.Age, &user.Gender, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.Type, &user.Requested, &user.CreatedAt, &user.UpdatedAt)
 	return user, err
 }
 
-func GetUserByUsername(username string) (*User, error) {
+func GetUserByNickname(nickname string) (*User, error) {
 	user := &User{}
-	username = strings.TrimSpace(strings.ToLower(username))
-	err := DB.QueryRow(`SELECT * FROM users WHERE username LIKE ?`, username).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Type, &user.Requested, &user.CreatedAt, &user.UpdatedAt)
+	nickname = strings.TrimSpace(nickname)
+	err := DB.QueryRow(`SELECT * FROM users WHERE nickname LIKE ?`, nickname).Scan(&user.ID, &user.Nickname, &user.Age, &user.Gender, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.Type, &user.Requested, &user.CreatedAt, &user.UpdatedAt)
 	return user, err
 }
 
@@ -380,7 +394,7 @@ func (u *User) ModeratorRequests() ([]*User, error) {
 
 	for rows.Next() {
 		user := &User{}
-		err = rows.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Type, &user.Requested, &user.CreatedAt, &user.UpdatedAt)
+		err = rows.Scan(&user.ID, &user.Nickname, &user.Email, &user.Password, &user.Type, &user.Requested, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -411,4 +425,64 @@ func (u *User) Notifications() ([]*Notification, error) {
 	}
 
 	return notifications, nil
+}
+
+// UsersList
+
+func (u *User) UsersList() ([]*User, error) {
+	query := `
+    SELECT 
+        u.id, u.nickname, u.age, u.gender, u.first_name, u.last_name, 
+        u.email, u.password, u.type, u.requested, u.created_at, u.updated_at, 
+        MAX(m.time) as last_messaged_at
+    FROM 
+        users u
+    LEFT JOIN 
+        messages m ON (u.id = m.sender_id AND m.receiver_id = ?) 
+                   OR (u.id = m.receiver_id AND m.sender_id = ?)
+    WHERE 
+        u.id != ?
+    GROUP BY 
+        u.id
+    ORDER BY 
+        last_messaged_at DESC NULLS LAST, u.nickname
+    `
+
+	rows, err := DB.Query(query, u.ID, u.ID, u.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error querying users: %v", err)
+	}
+	defer rows.Close()
+
+	var users []*User
+	for rows.Next() {
+		var user User
+		var lastMessagedAtStr sql.NullString
+		err := rows.Scan(
+			&user.ID, &user.Nickname, &user.Age, &user.Gender, &user.FirstName,
+			&user.LastName, &user.Email, &user.Password, &user.Type, &user.Requested,
+			&user.CreatedAt, &user.UpdatedAt, &lastMessagedAtStr,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning user row: %v", err)
+		}
+		if lastMessagedAtStr.Valid && lastMessagedAtStr.String != "" {
+			lastMessagedAt, err := time.Parse("2006-01-02 15:04:05", lastMessagedAtStr.String)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing last_messaged_at: %v", err)
+			}
+			user.LastMessagedAt = &lastMessagedAt
+		} else {
+			user.LastMessagedAt = nil
+		}
+
+		user.HideDetails()
+		users = append(users, &user)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating user rows: %v", err)
+	}
+
+	return users, nil
 }

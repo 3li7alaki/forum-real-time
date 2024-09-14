@@ -20,7 +20,7 @@ export class Profile {
             .then(profile => {
                 this.content.innerHTML = `
             <h2>Profile</h2>
-            <p>Username: ${profile.username}</p>
+            <p>Nickname: ${profile.nickname}</p>
             <p>Email: ${profile.email}</p>
             <p>Role: ${profile.type}</p>
           `;
@@ -52,8 +52,8 @@ export class Profile {
                 this.content.innerHTML = `
             <h2>Edit Profile</h2>
             <form id="edit-profile-form">
-              <label for="username">Username:</label>
-              <input type="text" id="username" name="username" value="${profile.username}" required>
+              <label for="nickname">Nickname:</label>
+              <input type="text" id="nickname" name="nickname" value="${profile.nickname}" required>
               <label for="email">Email:</label>
               <input type="email" id="email" name="email" value="${profile.email}" required>
               <label for="password">Password:</label>
@@ -73,10 +73,10 @@ export class Profile {
 
     handleEditProfile(event) {
         event.preventDefault();
-        const username = document.getElementById('username').value;
+        const nickname = document.getElementById('nickname').value;
         const email = document.getElementById('email').value;
 
-        let body = { username, email };
+        let body = { nickname, email };
 
         const password = document.getElementById('password').value;
         const confirm_password = document.getElementById('confirm-password').value;
