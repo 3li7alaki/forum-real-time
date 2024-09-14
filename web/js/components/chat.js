@@ -11,7 +11,7 @@ export class Chat {
         this.users = [];
         this.input = document.getElementById('chat-input');
 
-        this.addTypingListener();
+        // this.addTypingListener();
     }
 
     setUsers(users) {
@@ -27,7 +27,7 @@ export class Chat {
         usersList.innerHTML = '';
         display.appendChild(usersList)
 
-        this.users.forEach( user => {
+        this.users?.forEach( user => {
             const newDiv = document.createElement('div');
             const nickname = user.nickname;
             const time = user.last_messaged_at? new Date(user.last_messaged_at): null;

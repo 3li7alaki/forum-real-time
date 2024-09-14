@@ -8,18 +8,19 @@ export let currentPage = window.location.pathname.slice(1) || 'home';
 export let previousPage = null;
 
 export function setCurrentUser(user) {
-    webSock.connect();
     SessionChecker.init();
     NotificationComponent.startGettingNotifications();
     currentUser = user;
+    webSock.connect();
+
     localStorage.setItem('currentUser', JSON.stringify(user));
 }
 
 export function removeCurrentUser() {
-    webSock.disconnect();
     SessionChecker.stop();
     NotificationComponent.stopGettingNotifications();
     currentUser = null;
+    webSock.disconnect();
     localStorage.removeItem('currentUser');
     document.cookie = 'session=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
 }

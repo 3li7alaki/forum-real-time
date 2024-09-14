@@ -17,11 +17,15 @@ export class WebSock {
         }
         this.socket = new WebSocket(this.url);
 
+        if (!currentUser) {
+            return;
+        }
+
         this.socket.onopen = () => {
             this.socket.send(JSON.stringify({
                 type: 'open',
                 content: '',
-                user_id: 1
+                user_id: currentUser.id
             }));
         };
 
@@ -30,7 +34,7 @@ export class WebSock {
 
             // Type is users list
             if (data.type === 'users') {
-                ChatComponent.setUsers(data);
+                ChatComponent.setUsers(data.content);
             }
 
             // Type is message
@@ -50,6 +54,7 @@ export class WebSock {
 
     disconnect() {
         this.socket.close();
+        this.socket = null;
     }
 
     typing(status) {

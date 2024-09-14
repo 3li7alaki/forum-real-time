@@ -60,7 +60,7 @@ func (m *Message) Create() error {
 		return errors.New("message already exists")
 	}
 
-	result, err := DB.Exec(`INSERT INTO messages (content, sender_id, receiver_id, time) VALUES (?, ?, ?, ?)`, m.Content, m.SenderID, m.ReceiverID, time.Now())
+	result, err := DB.Exec(`INSERT INTO messages (content, sender_id, receiver_id) VALUES (?, ?, ?)`, m.Content, m.SenderID, m.ReceiverID)
 	if err != nil {
 		return err
 	}
