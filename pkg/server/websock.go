@@ -2,7 +2,7 @@ package server
 
 import "C"
 import (
-	"forum/pkg/controllers"
+	"forum/pkg/models"
 	"log"
 	"net/http"
 	"sync"
@@ -23,9 +23,10 @@ type Client struct {
 }
 
 type Message struct {
-	Type    string      `json:"type"`
-	Content interface{} `json:"content"`
-	UserID  int         `json:"user_id"`
+	Type       string      `json:"type"`
+	Content    interface{} `json:"content"`
+	UserID     int         `json:"user_id"`
+	ReceiverID int         `json:"receiver_id"`
 }
 
 var Clients = make(map[*websocket.Conn]*Client)
@@ -33,11 +34,11 @@ var ClientsMutex = sync.Mutex{}
 
 var Register = make(chan *Client)
 var Messages = make(chan Message)
+var Typing = make(chan Message)
 
 func HandleSocks(w http.ResponseWriter, r *http.Request) {
 	ws, err := Upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("Error upgrading to WebSocket: %v", err)
 		return
 	}
 	defer ws.Close()
@@ -51,7 +52,6 @@ func HandleSocks(w http.ResponseWriter, r *http.Request) {
 	var userIDMessage Message
 	err = ws.ReadJSON(&userIDMessage)
 	if err != nil {
-		log.Printf("Error receiving user ID: %v", err)
 		return
 	}
 
@@ -61,18 +61,15 @@ func HandleSocks(w http.ResponseWriter, r *http.Request) {
 	ClientsMutex.Unlock()
 
 	// Send the users list to the new client
-	users, _ := controllers.UsersList(client.UserID)
+	users, _ := UsersList(client.UserID)
 
 	message := Message{
 		Type:    "users",
 		Content: users,
 	}
 
-	log.Printf("Sending users list: %v", message)
-
 	err = ws.WriteJSON(message)
 	if err != nil {
-		log.Printf("Error sending users list: %v", err)
 		return
 	}
 
@@ -95,5 +92,98 @@ func HandleSocks(w http.ResponseWriter, r *http.Request) {
 		if msg.Type == "message" {
 			Messages <- msg
 		}
+
+		if msg.Type == "typing" {
+			Typing <- msg
+		}
 	}
+}
+
+func HandleMessages() {
+	for {
+		msg := <-Messages
+
+		for conn, client := range Clients {
+			if client.UserID == msg.ReceiverID {
+				err := conn.WriteJSON(msg)
+				if err != nil {
+					log.Printf("Error writing message: %v", err)
+					ClientsMutex.Lock()
+					delete(Clients, conn)
+					ClientsMutex.Unlock()
+				}
+			}
+		}
+	}
+}
+
+func HandleRegister() {
+	for {
+		client := <-Register
+
+		for conn := range Clients {
+			if conn != client.Conn {
+				// Send new users list
+				users, _ := UsersList(client.UserID)
+
+				message := Message{
+					Type:    "users",
+					Content: users,
+				}
+
+				err := conn.WriteJSON(message)
+
+				if err != nil {
+					log.Printf("Error writing register message: %v", err)
+					ClientsMutex.Lock()
+					delete(Clients, conn)
+					ClientsMutex.Unlock()
+				}
+			}
+		}
+	}
+}
+
+func HandleTyping() {
+	for {
+		msg := <-Typing
+
+		for conn, client := range Clients {
+			if client.UserID != msg.UserID {
+				message := Message{
+					Type:    "typing",
+					Content: msg.Content,
+					UserID:  msg.UserID,
+				}
+
+				err := conn.WriteJSON(message)
+
+				if err != nil {
+					log.Printf("Error writing typing message: %v", err)
+					ClientsMutex.Lock()
+					delete(Clients, conn)
+					ClientsMutex.Unlock()
+				}
+			}
+		}
+	}
+}
+
+func UsersList(id int) ([]*models.User, error) {
+	// Get the list of users
+	user := &models.User{
+		ID: id,
+	}
+
+	err := user.Refresh()
+	if err != nil {
+		return nil, err
+	}
+
+	users, err := user.UsersList()
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

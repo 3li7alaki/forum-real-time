@@ -2,7 +2,7 @@
 import {navigate} from './router.js';
 import {currentPage, currentUser, setCurrentUser} from "./state.js";
 import {SessionChecker} from "./session.js";
-import {WebSock} from "./websock.js";
+import {webSock} from "./websock.js";
 
 function initApp() {
     
@@ -13,8 +13,6 @@ function initApp() {
 
     navigate(currentPage);
     window.navigate = navigate;
-
-    const sock = new WebSock();
 }
 
 document.addEventListener('DOMContentLoaded', initApp);

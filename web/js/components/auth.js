@@ -5,6 +5,7 @@ import {previousPage, removeCurrentUser, setCurrentUser} from "../state.js";
 import {fetchAPI} from "../api.js";
 import Toastr from "../toastr.js";
 import Modal from "../modal.js";
+import {webSock} from "../websock.js";
 
 export class Auth {
 
@@ -70,8 +71,16 @@ export class Auth {
         this.content.innerHTML = `
     <h2>Register</h2>
     <form id="registerForm">
+        <input type="text" id="nickname" required placeholder="Nickname">
+        <input type="number" id="age" required placeholder="Age" min="13" max="99">
+        <select id="gender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+        <input type="text" id="first_name" required placeholder="First Name">
+        <input type="text" id="last_name" required placeholder="Last Name">
       <input type="email" id="email" required placeholder="Email">
-      <input type="text" id="nickname" required placeholder="Nickname">
       <input type="password" id="password" required placeholder="Password">
       <button type="submit">Register</button>
     </form>
@@ -81,13 +90,25 @@ export class Auth {
 
     async handleRegister(event) {
         event.preventDefault();
-        const email = document.getElementById('email').value;
         const nickname = document.getElementById('nickname').value;
+        const age = document.getElementById('age').value;
+        const gender = document.getElementById('gender').value;
+        if (['Male','Female','Other'].includes(gender) === false) {
+            Toastr.error('Wallahi You are gay');
+            return;
+        } else if (gender === 'Other') {
+            Toastr.error('Other? Really?');
+            return;
+        }
+        const first_name = document.getElementById('first_name').value;
+        const last_name = document.getElementById('last_name').value;
+        const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         try {
-            const user = await fetchAPI('/register', 'POST', { email, nickname, password });
+            const user = await fetchAPI('/register', 'POST', { nickname, age, gender, first_name, last_name, email, password });
             setCurrentUser(user);
             Toastr.success('Registration successful');
+            webSock.register();
             navigate('home');
         } catch (error) {
             Toastr.error(error.message);

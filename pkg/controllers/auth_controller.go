@@ -4,6 +4,7 @@ import (
 	"forum/pkg/consts"
 	"forum/pkg/models"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -41,11 +42,17 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
+	age, _ := strconv.Atoi(r.FormValue("age"))
+
 	user := &models.User{
-		Nickname: r.FormValue("nickname"),
-		Email:    r.FormValue("email"),
-		Password: r.FormValue("password"),
-		Type:     consts.USER,
+		Nickname:  r.FormValue("nickname"),
+		Age:       age,
+		Gender:    r.FormValue("gender"),
+		FirstName: r.FormValue("first_name"),
+		LastName:  r.FormValue("last_name"),
+		Email:     r.FormValue("email"),
+		Password:  r.FormValue("password"),
+		Type:      consts.USER,
 	}
 
 	if err := user.Create(); err != nil {

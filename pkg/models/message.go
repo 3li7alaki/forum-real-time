@@ -60,7 +60,7 @@ func (m *Message) Create() error {
 		return errors.New("message already exists")
 	}
 
-	result, err := DB.Exec(`INSERT INTO messages (content, sender_id, receiver_id) VALUES (?, ?, ?)`, m.Content, m.SenderID, m.ReceiverID)
+	result, err := DB.Exec(`INSERT INTO messages (content, sender_id, receiver_id, time) VALUES (?, ?, ?, ?)`, m.Content, m.SenderID, m.ReceiverID, time.Now())
 	if err != nil {
 		return err
 	}
@@ -110,6 +110,7 @@ func (m *Message) GetRelations() error {
 	if err != nil {
 		return err
 	}
+	sender.HideDetails()
 	m.Sender = sender
 
 	receiver := &User{ID: m.ReceiverID}
@@ -117,6 +118,7 @@ func (m *Message) GetRelations() error {
 	if err != nil {
 		return err
 	}
+	receiver.HideDetails()
 	m.Receiver = receiver
 
 	return nil

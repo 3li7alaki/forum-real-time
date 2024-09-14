@@ -6,6 +6,10 @@ func ProfileRequest(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rules := Rules{
 			"nickname":         {"required", "min:3", "max:50"},
+			"age":              {"required", "integer", "min:13", "max:99"},
+			"gender":           {"required", "in:Male,Female"},
+			"first_name":       {"required", "min:3", "max:20"},
+			"last_name":        {"required", "min:3", "max:20"},
 			"email":            {"required", "email", "max:50"},
 			"password":         {"min:6", "max:50"},
 			"confirm_password": {"min:6", "max:50"},

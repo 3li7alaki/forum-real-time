@@ -486,3 +486,23 @@ func (u *User) UsersList() ([]*User, error) {
 
 	return users, nil
 }
+
+func (u *User) MessagesWith(userID int, limit int) ([]*Message, error) {
+	rows, err := DB.Query(`SELECT * FROM messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) ORDER BY time DESC LIMIT ?`, u.ID, userID, userID, u.ID, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var messages []*Message
+
+	for rows.Next() {
+		message := &Message{}
+		err = rows.Scan(&message.ID, &message.Content, &message.Time, &message.SenderID, &message.ReceiverID)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, message)
+	}
+
+	return messages, nil
+}

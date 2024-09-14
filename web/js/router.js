@@ -37,7 +37,7 @@ const routePermissions = {
     home: ['guest', 'user', 'moderator', 'admin'],
     login: ['guest'],
     register: ['guest'],
-    posts: ['guest', 'user', 'moderator', 'admin'],
+    posts: ['guest', 'user', 'moderator', 'admin'], // TODO: remove guest
     post: ['user', 'moderator', 'admin'],
     // Admin
     users: ['admin'],

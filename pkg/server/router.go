@@ -24,8 +24,7 @@ func StartRouter() {
 	// Websocket
 	Router.HandleFunc("/ws", HandleSocks)
 
-	//go HandleRegister()
-	//go HandleMessages()
-	//go HandleUserUpdates()
-	//go HandleTyping()
+	go HandleRegister()
+	go HandleMessages()
+	go HandleTyping()
 }

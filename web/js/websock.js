@@ -1,17 +1,27 @@
 // websock.js
 
 import {ChatComponent} from "./components.js";
+import {currentUser} from "./state.js";
 
 export class WebSock {
     constructor() {
-        let secure = window.location.protocol === 'https:';
-        this.socket = new WebSocket(`${secure ? 'wss' : 'ws'}://${window.location.host}/ws`);
+        const subdomain = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        this.url = `${subdomain}://${window.location.host}/ws`;
+
+        this.socket = null;
+    }
+
+    connect() {
+        if (this.socket) {
+            this.disconnect();
+        }
+        this.socket = new WebSocket(this.url);
 
         this.socket.onopen = () => {
             this.socket.send(JSON.stringify({
                 type: 'open',
                 content: '',
-                user_id: 2
+                user_id: 1
             }));
         };
 
@@ -20,7 +30,7 @@ export class WebSock {
 
             // Type is users list
             if (data.type === 'users') {
-                ChatComponent.setUsers(data.content);
+                ChatComponent.setUsers(data);
             }
 
             // Type is message
@@ -37,4 +47,47 @@ export class WebSock {
             }
         };
     }
+
+    disconnect() {
+        this.socket.close();
+    }
+
+    typing(status) {
+        if (!currentUser) {
+            return;
+        }
+
+        this.socket.send(JSON.stringify({
+            type: 'typing',
+            content: status,
+            user_id: currentUser.id
+        }));
+    }
+
+    message(content, receiverID) {
+        if (!currentUser) {
+            return;
+        }
+
+        this.socket.send(JSON.stringify({
+            type: 'message',
+            content: content,
+            user_id: currentUser.id,
+            receiver_id: receiverID
+        }));
+    }
+
+    register() {
+        if (!currentUser) {
+            return;
+        }
+
+        this.socket.send(JSON.stringify({
+            type: 'register',
+            content: '',
+            user_id: currentUser.id
+        }));
+    }
 }
+
+export const webSock = new WebSock();

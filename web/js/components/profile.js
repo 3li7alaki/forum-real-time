@@ -4,6 +4,7 @@ import {navigate} from "../router.js";
 import {previousPage, removeCurrentUser, setCurrentUser} from "../state.js";
 import {fetchAPI} from "../api.js";
 import Toastr from "../toastr.js";
+import modal from "../modal.js";
 
 export class Profile {
 
@@ -21,6 +22,10 @@ export class Profile {
                 this.content.innerHTML = `
             <h2>Profile</h2>
             <p>Nickname: ${profile.nickname}</p>
+            <p>Age: ${profile.age}</p>
+            <p>Gender: ${profile.gender}</p>
+            <p>First Name: ${profile.first_name}</p>
+            <p>Last Name: ${profile.last_name}</p>
             <p>Email: ${profile.email}</p>
             <p>Role: ${profile.type}</p>
           `;
@@ -54,6 +59,17 @@ export class Profile {
             <form id="edit-profile-form">
               <label for="nickname">Nickname:</label>
               <input type="text" id="nickname" name="nickname" value="${profile.nickname}" required>
+              <label for="age">Age:</label>
+              <input type="number" id="age" name="age" value="${profile.age}" min="13" max="99" required>
+              <label for="gender">Gender:</label>
+              <select id="gender" name="gender" required>
+              <option value="Male" ${profile.gender === 'Male' ? 'selected' : ''}>Male</option>
+              <option value="Female" ${profile.gender === 'Female' ? 'selected' : ''}>Female</option>
+              </select>
+              <label for="first_name">First Name:</label>
+              <input type="text" id="first_name" name="first_name" value="${profile.first_name}" required>
+              <label for="last_name">Last Name:</label>
+              <input type="text" id="last_name" name="last_name" value="${profile.last_name}" required>
               <label for="email">Email:</label>
               <input type="email" id="email" name="email" value="${profile.email}" required>
               <label for="password">Password:</label>
@@ -74,9 +90,13 @@ export class Profile {
     handleEditProfile(event) {
         event.preventDefault();
         const nickname = document.getElementById('nickname').value;
+        const age = document.getElementById('age').value;
+        const gender = document.getElementById('gender').value;
+        const first_name = document.getElementById('first_name').value;
+        const last_name = document.getElementById('last_name').value;
         const email = document.getElementById('email').value;
 
-        let body = { nickname, email };
+        let body = { nickname, age, gender, first_name, last_name, email };
 
         const password = document.getElementById('password').value;
         const confirm_password = document.getElementById('confirm-password').value;
@@ -88,14 +108,18 @@ export class Profile {
             return;
         }
 
-        fetchAPI('/profile', 'PUT', body)
-            .then(profile => {
-                setCurrentUser(profile);
-                Toastr.success('Profile updated');
-                navigate('profile');
-            }).catch(error => {
-                Toastr.error(error.message);
-            });
+        function edit() {
+            fetchAPI('/profile', 'PUT', body)
+                .then(profile => {
+                    setCurrentUser(profile);
+                    Toastr.success('Profile updated');
+                    navigate('profile');
+                }).catch(error => {
+                    Toastr.error(error.message);
+                });
+        }
+
+        modal.show('Are you sure you want to update your profile?', edit);
     }
 
     handleRequestModerator() {

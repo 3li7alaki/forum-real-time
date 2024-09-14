@@ -1,19 +1,22 @@
 // state.js
 import {SessionChecker} from "./session.js";
 import {NotificationComponent} from "./components.js";
+import {webSock} from "./websock.js";
 
 export let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 export let currentPage = window.location.pathname.slice(1) || 'home';
 export let previousPage = null;
 
 export function setCurrentUser(user) {
+    webSock.connect();
     SessionChecker.init();
-    NotificationComponent.startGettingNotifications()
+    NotificationComponent.startGettingNotifications();
     currentUser = user;
     localStorage.setItem('currentUser', JSON.stringify(user));
 }
 
 export function removeCurrentUser() {
+    webSock.disconnect();
     SessionChecker.stop();
     NotificationComponent.stopGettingNotifications();
     currentUser = null;

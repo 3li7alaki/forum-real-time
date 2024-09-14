@@ -56,6 +56,9 @@ func RegisterAPIs() {
 	GET("/check-session", controllers.AuthController, requests.DefaultRequest, middlewares.AuthMiddleware)    // Check session
 	POST("/register", controllers.AuthController, requests.RegisterRequest, middlewares.DefaultAPIMiddleware) // Register
 	GET("/logout", controllers.AuthController, requests.DefaultRequest, middlewares.AuthMiddleware)           // Logout
+	// Message routes (Done)
+	GET("/messages", controllers.MessagesController, requests.MessagesRequest, middlewares.AuthMiddleware) // Index
+	POST("/messages", controllers.MessagesController, requests.MessageRequest, middlewares.AuthMiddleware) // Create
 	// Third party routes (Skip)
 	WEB("/login/google", controllers.ThirdPartyController, requests.DefaultRequest, middlewares.DefaultAPIMiddleware)    // Google auth
 	WEB("/login/github", controllers.ThirdPartyController, requests.DefaultRequest, middlewares.DefaultAPIMiddleware)    // Github auth
