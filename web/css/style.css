@@ -644,4 +644,39 @@ button:disabled {
     width: 300px;
     flex-direction: column;
     height: 100%;
+    margin-right: 20px;
+}
+#chat-section h2{
+    color: white;
+}
+
+.listDiv{
+    display: block;
+    border-radius: 15px;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    background-color: var(--secondary);
+    cursor: pointer;
+}
+
+.nicknameInList {
+    display: flex;
+    align-items: center;
+}
+
+.lastMessagedInList{
+    display: flex;
+    align-items: center;
+    color: #bdbdbd;
+}
+#chat-backButton {
+    background-color: beige;
+    color: black;
+    padding: 5px;
+    border: 1px solid beige;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 55px;
+    border-radius: 15px;
 }

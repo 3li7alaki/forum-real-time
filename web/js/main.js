@@ -5,7 +5,8 @@ import {SessionChecker} from "./session.js";
 import {WebSock} from "./websock.js";
 
 function initApp() {
-    if (currentUser) {
+    
+    if (currentUser) {    
         setCurrentUser(currentUser);
         SessionChecker.check();
     }

@@ -11,7 +11,7 @@ export class WebSock {
             this.socket.send(JSON.stringify({
                 type: 'open',
                 content: '',
-                user_id: 1
+                user_id: 2
             }));
         };
 
