@@ -5,11 +5,14 @@ import {webSock} from "../websock.js";
 import {fetchAPI} from "../api.js";
 import { currentUser } from "../state.js";
 import { timeSince } from "../utils.js";
+import Toastr from "../toastr.js";
 
 export class Chat {
     constructor() {
         this.users = [];
         this.input = document.getElementById('chat-input');
+        this.messages = [];
+        this.currentReceiver = null;
 
         // this.addTypingListener();
     }
@@ -19,7 +22,12 @@ export class Chat {
         this.renderUsers();
     }
 
-    renderUsers() { // TODO: Render users in chat
+    renderUsers() {
+        this.messages = [];
+        this.users = this.users.sort((a, b) => {
+            return new Date(b.last_messaged_at) - new Date(a.last_messaged_at);
+        });
+
         const display = document.getElementById('chat-display');
         display.innerHTML = '';
         const usersList = document.createElement('div');
@@ -28,16 +36,17 @@ export class Chat {
         display.appendChild(usersList)
 
         this.users?.forEach( user => {
-            const newDiv = document.createElement('div');
+            const userDiv = document.createElement('div');
             const nickname = user.nickname;
             const time = user.last_messaged_at? new Date(user.last_messaged_at): null;
             const displayMsg = time? `Last Messaged ${timeSince(time)}`: `Say hello`;
-            newDiv.classList.add("listDiv");
-            newDiv.innerHTML = `<div class="nicknameInList"><span class="nickListSpan">${nickname + " "}</span></div>
+            userDiv.classList.add("listDiv");
+            userDiv.innerHTML = `<div class="nicknameInList"><span class="nickListSpan">${nickname + " "}</span></div>
                                 <div class="lastMessagedInList">${displayMsg}</div>`;
-            usersList.appendChild(newDiv);
+            usersList.appendChild(userDiv);
 
-            newDiv.onclick = () => {
+            userDiv.onclick = () => {
+                this.currentReceiver = user;
                 this.renderMessages(user.id)
             }
 
@@ -47,6 +56,7 @@ export class Chat {
     }
 
     renderMessages(idMessaged){
+        this.messages = this.getMessages(idMessaged);
         const backButton = document.createElement('div');
         const display = document.getElementById('chat-display');
         display.innerHTML = '';
@@ -92,9 +102,42 @@ export class Chat {
     }
 
     getMessages(user_id, limit = 10) {
-        fetchAPI(`/messages`, 'GET', { user_id, limit })
-            .then(messages => {
-                console.log('Messages:', messages);
-            });
+        return fetchAPI(`/messages?user_id=${user_id}&limit=${limit}`);
+    }
+
+    receiveMessage(message) {
+        this.users.forEach(user => {
+            if (user.id === message.sender.id) {
+                user.last_messaged_at = message.time;
+            }
+        })
+
+        if (this.currentReceiver?.id === message.sender.id) {
+            this.messages.push(message);
+            this.renderMessages();
+        } else {
+            Toastr.info('New message from ' + message.sender.nickname);
+
+            if (!this.currentReceiver) {
+                this.renderUsers();
+            }
+        }
+    }
+
+    sendMessage(content) {
+        if (!this.currentReceiver) {
+            Toastr.error('Select a user to send message to');
+            return;
+        }
+
+        const body = { content: content, receiver_id: this.currentReceiver.id };
+        fetchAPI('/messages', 'POST', body).then(data => {
+            this.messages.push(data);
+            this.renderMessages();
+
+            webSock.message(content, this.currentReceiver.id);
+        }).catch(err => {
+            Toastr.error('Failed to send message');
+        });
     }
 }

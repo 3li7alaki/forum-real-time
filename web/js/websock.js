@@ -39,15 +39,11 @@ export class WebSock {
 
             // Type is message
             if (data.type === 'message') {
-                // TODO: Notify user
-
-                // If chat is open, display new message in chat
-
-                // If chat is closed, display notification
+                ChatComponent.receiveMessage(data.content);
             }
 
             if (data.type === 'typing') {
-                // TODO: Display user is typing
+                ChatComponent.userTyping(data.user_id, data.content);
             }
         };
     }
