@@ -10,6 +10,7 @@ import {Category} from "./components/category.js";
 import {Request} from "./components/request.js";
 import {Report} from "./components/report.js";
 import {Activity} from "./components/activity.js";
+import {Chat} from "./components/chat.js";
 
 // Main Component
 export const MainComponent = new Main();
@@ -40,3 +41,6 @@ export const ReportComponent = new Report();
 
 // Activity Component
 export const ActivityComponent = new Activity();
+
+// Chat Component
+export const ChatComponent = new Chat();

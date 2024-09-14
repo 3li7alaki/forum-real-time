@@ -6,8 +6,8 @@ import {SessionChecker} from "./session.js";
 function initApp() {
     if (currentUser) {
         setCurrentUser(currentUser);
-
     }
+
     SessionChecker.check();
     navigate(currentPage);
     window.navigate = navigate;

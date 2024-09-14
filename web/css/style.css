@@ -50,7 +50,7 @@ body {
 
 #navigation {
     height: 100%;
-    width: 200px;
+    width: 300px;
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
@@ -617,3 +617,31 @@ button:disabled {
 }
 
 /* end button style */
+
+/* scrollbar style */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: none;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
+
+/* end scrollbar style */
+
+/* chat section style */
+#chat-section {
+    display: flex;
+    width: 300px;
+    flex-direction: column;
+    height: 100%;
+}
