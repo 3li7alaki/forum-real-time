@@ -10,7 +10,6 @@ import Toastr from "../toastr.js";
 export class Chat {
     constructor() {
         this.users = [];
-        this.input = document.getElementById('chat-input');
         this.messages = [];
         this.currentReceiver = null;
 
@@ -24,6 +23,7 @@ export class Chat {
 
     renderUsers() {
         this.messages = [];
+        this.currentReceiver = null;
         this.users = this.users.sort((a, b) => {
             return new Date(b.last_messaged_at) - new Date(a.last_messaged_at);
         });
@@ -52,13 +52,16 @@ export class Chat {
 
         });
 
-        console.log('Rendering users:', this.users);
     }
 
     renderChat(idMessaged){
+        const display = document.getElementById('chat-display');
+        if(!display){
+            console.log("Chat display error.");
+            return;
+        }
 
         const backButton = document.createElement('div');
-        const display = document.getElementById('chat-display');
         display.innerHTML = '';
         backButton.style.cursor = 'pointer';
         backButton.textContent = '< Back';
@@ -72,7 +75,14 @@ export class Chat {
         const messagesDiv = document.createElement('div');
         messagesDiv.id = 'messages-display';
         display.appendChild(messagesDiv);
-        this.renderMessages(idMessaged)
+
+        this.getMessages(idMessaged).then(data => {
+            this.messages = data;
+            this.renderMessages(idMessaged);
+        }).catch(err => {
+            console.log(err)
+            Toastr.error('Error getting Messages');
+        })
 
         const inputForm = document.createElement('form');
         inputForm.innerHTML = `<input name="msg-input" type="text" placeholder="Type something..." />
@@ -85,28 +95,39 @@ export class Chat {
             if (userMsg.replace(/ /g, "") === ""){
                 return;
             }
+            inputForm.reset();
             this.sendMessage(userMsg);
+
 
         });    
         display.appendChild(inputForm);
 
     }
-    renderMessages(idMessaged){
+    renderMessages(idMessaged, appended = false, scrolled = false){
+
         const messagesDiv =  document.getElementById('messages-display');
-        this.getMessages(idMessaged).then(data => {
-            data.slice().reverse().forEach(msg => {
-                const loadMsg = document.createElement('div');
-                if (msg.sender_id === idMessaged){
-                    loadMsg.classList.add('sMsg'); //sender message
-                } else {
-                    loadMsg.classList.add('mMsg'); //my message
-                }
-                loadMsg.textContent = msg.content;
-                messagesDiv.appendChild(loadMsg)
-            })
-        }).catch(err => {
-            Toastr.error('Error loading Messages');
+        if (appended){
+            messagesDiv.appendChild(this.divMsg(idMessaged, this.messages[this.messages.length-1]));
+            return;
+        }
+
+        this.messages.slice().reverse().forEach(msg => {
+            
+            messagesDiv.appendChild(this.divMsg(idMessaged, msg));
         })
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    divMsg(idMessaged, msgInfo) {
+        const loadMsg = document.createElement('div');
+        const senderID = msgInfo.sender_id? msgInfo.sender_id: msgInfo.user_id
+        if (senderID === idMessaged){
+            loadMsg.classList.add('sMsg'); //sender message
+        } else {
+            loadMsg.classList.add('mMsg'); //my message
+        }
+        loadMsg.textContent = msgInfo.content;
+        return loadMsg;
     }
 
     addTypingListener() {
@@ -147,22 +168,27 @@ export class Chat {
 
     receiveMessage(message) {
         this.users.forEach(user => {
-            if (user.id === message.sender.id) {
-                user.last_messaged_at = message.time;
+            if (user.id === message.user_id) {
+                user.last_messaged_at = message.time; //MESSAGE.TIME DOES NOT EXIST AS part of the object.
+                this.renderUsers()
             }
         })
 
-        if (this.currentReceiver?.id === message.sender.id) {
+
+        if (this.currentReceiver?.id === message.user_id) {
+            
             this.messages.push(message);
-            this.renderChat();
+            this.renderMessages(this.currentReceiver.id, true);
         } else {
-            Toastr.info('New message from ' + message.sender.nickname);
+            console.log(message)
+            Toastr.info('New message from ' + message.receiver_id);
 
             if (!this.currentReceiver) {
                 this.renderUsers();
             }
         }
     }
+
 
     sendMessage(content) {
         if (!this.currentReceiver) {
@@ -172,13 +198,27 @@ export class Chat {
     
         const body = { content: content, receiver_id: this.currentReceiver.id };
         fetchAPI('/messages', 'POST', body).then(data => {
-            this.messages.push(data);            
-            this.renderChat(this.currentReceiver.id);
+            this.messages.push(data);
+            this.renderMessages(this.currentReceiver.id, true);
 
             webSock.message(content, this.currentReceiver.id);
         }).catch(err => {
             Toastr.error('Failed to send message');
-            console.log("Message Error: ", err)
+            console.log("Message Error: ", err);
         });
     }
+
+    removeChats() {
+        this.users = [];
+        this.messages = [];
+        this.currentReceiver = null;
+
+        const display = document.getElementById('chat-display');
+        if (display){
+            display.innerHTML = '';
+        };
+    }
 }
+
+
+    

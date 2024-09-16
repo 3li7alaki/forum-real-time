@@ -6,6 +6,7 @@ import {fetchAPI} from "../api.js";
 import Toastr from "../toastr.js";
 import Modal from "../modal.js";
 import {webSock} from "../websock.js";
+import { ChatComponent } from "../components.js";
 
 export class Auth {
 
@@ -123,6 +124,7 @@ export class Auth {
                     console.log('Logout response:', r);
                     removeCurrentUser()
                     navigate('home');
+                    ChatComponent.removeChats();
                     Toastr.success('Logout successful');
                 }).catch(e => {
                 console.error('Logout failed:', e);

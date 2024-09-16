@@ -39,7 +39,7 @@ export class WebSock {
 
             // Type is message
             if (data.type === 'message') {
-                ChatComponent.receiveMessage(data.content);
+                ChatComponent.receiveMessage(data);
             }
 
             if (data.type === 'typing') {
@@ -69,11 +69,12 @@ export class WebSock {
         if (!currentUser) {
             return;
         }
-
+        
         this.socket.send(JSON.stringify({
             type: 'message',
             content: content,
             user_id: currentUser.id,
+            // time: new Date(),
             receiver_id: receiverID
         }));
     }
