@@ -47,7 +47,7 @@ export class Chat {
 
             userDiv.onclick = () => {
                 this.currentReceiver = user;
-                this.renderMessages(user.id)
+                this.renderChat(user.id)
             }
 
         });
@@ -55,18 +55,58 @@ export class Chat {
         console.log('Rendering users:', this.users);
     }
 
-    renderMessages(idMessaged){
-        this.messages = this.getMessages(idMessaged);
+    renderChat(idMessaged){
+
         const backButton = document.createElement('div');
         const display = document.getElementById('chat-display');
         display.innerHTML = '';
         backButton.style.cursor = 'pointer';
-        backButton.textContent = '< Back'
-        backButton.id = 'chat-backButton'
-        backButton.onclick = () => this.renderUsers();
+        backButton.textContent = '< Back';
+        backButton.id = 'chat-backButton';
+        backButton.onclick = () => {
+            this.renderUsers();
+            this.currentReceiver = null;
+        };
         display.appendChild(backButton);
-        const messagesDiv = document.createElement('div')
 
+        const messagesDiv = document.createElement('div');
+        messagesDiv.id = 'messages-display';
+        display.appendChild(messagesDiv);
+        this.renderMessages(idMessaged)
+
+        const inputForm = document.createElement('form');
+        inputForm.innerHTML = `<input name="msg-input" type="text" placeholder="Type something..." />
+                               <button type="submit">AYO</button>`;
+        inputForm.id = 'message-form';
+        inputForm.addEventListener('submit', event => {
+            event.preventDefault();
+            const userForm = new FormData(inputForm);
+            const userMsg = userForm.get('msg-input');
+            if (userMsg.replace(/ /g, "") === ""){
+                return;
+            }
+            this.sendMessage(userMsg);
+
+        });    
+        display.appendChild(inputForm);
+
+    }
+    renderMessages(idMessaged){
+        const messagesDiv =  document.getElementById('messages-display');
+        this.getMessages(idMessaged).then(data => {
+            data.slice().reverse().forEach(msg => {
+                const loadMsg = document.createElement('div');
+                if (msg.sender_id === idMessaged){
+                    loadMsg.classList.add('sMsg'); //sender message
+                } else {
+                    loadMsg.classList.add('mMsg'); //my message
+                }
+                loadMsg.textContent = msg.content;
+                messagesDiv.appendChild(loadMsg)
+            })
+        }).catch(err => {
+            Toastr.error('Error loading Messages');
+        })
     }
 
     addTypingListener() {
@@ -114,7 +154,7 @@ export class Chat {
 
         if (this.currentReceiver?.id === message.sender.id) {
             this.messages.push(message);
-            this.renderMessages();
+            this.renderChat();
         } else {
             Toastr.info('New message from ' + message.sender.nickname);
 
@@ -129,15 +169,16 @@ export class Chat {
             Toastr.error('Select a user to send message to');
             return;
         }
-
+    
         const body = { content: content, receiver_id: this.currentReceiver.id };
         fetchAPI('/messages', 'POST', body).then(data => {
-            this.messages.push(data);
-            this.renderMessages();
+            this.messages.push(data);            
+            this.renderChat(this.currentReceiver.id);
 
             webSock.message(content, this.currentReceiver.id);
         }).catch(err => {
             Toastr.error('Failed to send message');
+            console.log("Message Error: ", err)
         });
     }
 }
