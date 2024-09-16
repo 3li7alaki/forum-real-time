@@ -115,7 +115,7 @@ export class Chat {
             
             messagesDiv.appendChild(this.divMsg(idMessaged, msg));
         })
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        messagesDiv.scrollTop = messagesDiv.scrollHeight; //needs fixing
     }
 
     divMsg(idMessaged, msgInfo) {
