@@ -25,7 +25,7 @@ type Client struct {
 type Message struct {
 	Type       string      `json:"type"`
 	Content    interface{} `json:"content"`
-	UserID     int         `json:"user_id"`
+	SenderID   int         `json:"sender_id"`
 	ReceiverID int         `json:"receiver_id"`
 	Time       string      `json:"time"`
 }
@@ -56,7 +56,7 @@ func HandleSocks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client.UserID = userIDMessage.UserID
+	client.UserID = userIDMessage.SenderID
 	ClientsMutex.Lock()
 	Clients[ws] = client
 	ClientsMutex.Unlock()
@@ -150,11 +150,11 @@ func HandleTyping() {
 		msg := <-Typing
 
 		for conn, client := range Clients {
-			if client.UserID != msg.UserID {
+			if client.UserID != msg.SenderID {
 				message := Message{
-					Type:    "typing",
-					Content: msg.Content,
-					UserID:  msg.UserID,
+					Type:     "typing",
+					Content:  msg.Content,
+					SenderID: msg.SenderID,
 				}
 
 				err := conn.WriteJSON(message)
