@@ -3,7 +3,7 @@
 import {currentUser, removeCurrentUser} from "./state.js";
 import Toastr from "./toastr.js";
 import {navigate} from "./router.js";
-import {MainComponent} from "./components.js";
+import {MainComponent, ChatComponent} from "./components.js";
 
 const API_BASE_URL = 'https://localhost:8080/api';
 let isInCooldown = false;
@@ -66,6 +66,7 @@ export async function fetchAPI(endpoint, method = 'GET', body = null) {
 export function handleUnauthorized() {
     if (!currentUser) return;
     removeCurrentUser();
+    ChatComponent.removeChats();
     Toastr.warning('Your session has expired. Please log in again.');
     MainComponent.renderNavigation();
     navigate('login');
