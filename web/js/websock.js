@@ -74,7 +74,7 @@ export class WebSock {
             type: 'message',
             content: content,
             user_id: currentUser.id,
-            // time: new Date(),
+            time: new Date().toJSON(),
             receiver_id: receiverID
         }));
     }

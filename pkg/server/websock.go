@@ -27,6 +27,7 @@ type Message struct {
 	Content    interface{} `json:"content"`
 	UserID     int         `json:"user_id"`
 	ReceiverID int         `json:"receiver_id"`
+	Time       string      `json:"time"`
 }
 
 var Clients = make(map[*websocket.Conn]*Client)
@@ -106,33 +107,6 @@ func HandleMessages() {
 		for conn, client := range Clients {
 			if client.UserID == msg.ReceiverID {
 				err := conn.WriteJSON(msg)
-				if err != nil {
-					log.Printf("Error writing message: %v", err)
-					ClientsMutex.Lock()
-					delete(Clients, conn)
-					ClientsMutex.Unlock()
-				}
-
-				// update the sender and receiver's userslist
-				users, _ := UsersList(client.UserID)
-				message := Message{
-					Type:    "users",
-					Content: users,
-				}
-				err = conn.WriteJSON(message)
-				if err != nil {
-					log.Printf("Error writing message: %v", err)
-					ClientsMutex.Lock()
-					delete(Clients, conn)
-					ClientsMutex.Unlock()
-				}
-
-				users, _ = UsersList(msg.ReceiverID)
-				message = Message{
-					Type:    "users",
-					Content: users,
-				}
-				err = conn.WriteJSON(message)
 				if err != nil {
 					log.Printf("Error writing message: %v", err)
 					ClientsMutex.Lock()
