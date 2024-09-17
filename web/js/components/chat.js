@@ -167,21 +167,21 @@ export class Chat {
     }
 
     receiveMessage(message) {
+        let senderNick = "";
         this.users.forEach(user => {
             if (user.id === message.user_id) {
-                user.last_messaged_at = message.time; //MESSAGE.TIME DOES NOT EXIST AS part of the object.
-                this.renderUsers()
+                user.last_messaged_at = message.time;
+                senderNick = user.nickname;
             }
         })
 
 
         if (this.currentReceiver?.id === message.user_id) {
-            
             this.messages.push(message);
             this.renderMessages(this.currentReceiver.id, true);
         } else {
             console.log(message)
-            Toastr.info('New message from ' + message.receiver_id);
+            Toastr.info('New message from ' + senderNick);
 
             if (!this.currentReceiver) {
                 this.renderUsers();
@@ -200,7 +200,13 @@ export class Chat {
         fetchAPI('/messages', 'POST', body).then(data => {
             this.messages.push(data);
             this.renderMessages(this.currentReceiver.id, true);
-
+            console.log(data);
+            this.users.forEach(user => {
+                if (user.id === data.receiver_id) {
+                    user.last_messaged_at = data.time;
+                }
+            })
+    
             webSock.message(content, this.currentReceiver.id);
         }).catch(err => {
             Toastr.error('Failed to send message');

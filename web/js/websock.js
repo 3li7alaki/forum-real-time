@@ -77,6 +77,7 @@ export class WebSock {
             time: new Date().toJSON(),
             receiver_id: receiverID
         }));
+        
     }
 
     register() {
