@@ -25,7 +25,7 @@ export class WebSock {
             this.socket.send(JSON.stringify({
                 type: 'open',
                 content: '',
-                user_id: currentUser.id
+                sender_id: currentUser.id
             }));
         };
 
@@ -43,7 +43,7 @@ export class WebSock {
             }
 
             if (data.type === 'typing') {
-                ChatComponent.userTyping(data.user_id, data.content);
+                ChatComponent.userTyping(data.sender_id, data.content);
             }
         };
     }
@@ -61,7 +61,7 @@ export class WebSock {
         this.socket.send(JSON.stringify({
             type: 'typing',
             content: status,
-            user_id: currentUser.id
+            sender_id: currentUser.id
         }));
     }
 
@@ -73,11 +73,11 @@ export class WebSock {
         this.socket.send(JSON.stringify({
             type: 'message',
             content: content,
-            user_id: currentUser.id,
+            sender_id: currentUser.id,
             time: new Date().toJSON(),
             receiver_id: receiverID
         }));
-        
+
     }
 
     register() {
@@ -88,7 +88,7 @@ export class WebSock {
         this.socket.send(JSON.stringify({
             type: 'register',
             content: '',
-            user_id: currentUser.id
+            sender_id: currentUser.id
         }));
     }
 }

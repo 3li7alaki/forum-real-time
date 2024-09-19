@@ -8,12 +8,16 @@ import { timeSince } from "../utils.js";
 import Toastr from "../toastr.js";
 
 export class Chat {
+
     constructor() {
         this.users = [];
         this.messages = [];
         this.currentReceiver = null;
-
+        this.messagesDiv = null;
         // this.addTypingListener();
+        this.throttleToastr = this.throttle((userSending) => {
+            Toastr.info('New message from ' + userSending);
+        }, 1500);
     }
 
     setUsers(users) {
@@ -27,7 +31,7 @@ export class Chat {
         this.users = this.users.sort((a, b) => {
             return new Date(b.last_messaged_at) - new Date(a.last_messaged_at);
         });
-
+        document.getElementById('chat-section').style.display = 'flex';
         const display = document.getElementById('chat-display');
         display.innerHTML = '';
         const usersList = document.createElement('div');
@@ -35,14 +39,14 @@ export class Chat {
         usersList.innerHTML = '';
         display.appendChild(usersList)
 
-        this.users?.forEach( user => {
+        this.users?.forEach( (user, ind) => {
             const userDiv = document.createElement('div');
             const nickname = user.nickname;
             const time = user.last_messaged_at? new Date(user.last_messaged_at): null;
-            const displayMsg = time? `Last Messaged ${timeSince(time)}`: `Say hello`;
+            const displayMsg = time? `Last Messaged ${timeSince(time)}`: `- Say hello`;
             userDiv.classList.add("listDiv");
-            userDiv.innerHTML = `<div class="nicknameInList"><span class="nickListSpan">${nickname + " "}</span></div>
-                                <div class="lastMessagedInList">${displayMsg}</div>`;
+            userDiv.innerHTML = `<div class="nicknameInList" id="user-${ind}-nickname"><span class="nickListSpan">${nickname}</span></div>
+                                <div class="lastMessagedInList" id="user-${ind}-lastMsg">${displayMsg}</div>`;
             usersList.appendChild(userDiv);
 
             userDiv.onclick = () => {
@@ -61,7 +65,25 @@ export class Chat {
             return;
         }
 
+        const flexBackName = document.createElement('div');
+        flexBackName.id = 'flex-back-name';
+
+        
+        const nameType = document.createElement('div');
+        nameType.id = 'name-typing';
+        const typingYN = document.createElement('div');
+        typingYN.id = 'typing-text-div'
+
+        typingYN.innerHTML = 'typing...'.split('').map((l, i) => {
+            l = `<span style='--i:${i+1};'>${l}</span>`;
+            return l;
+        }).join('');
+        const userNickname = document.createElement('div');
+        userNickname.id = 'chat-display-name';
+        userNickname.textContent = this.currentReceiver.nickname;
+
         const backButton = document.createElement('div');
+        
         display.innerHTML = '';
         backButton.style.cursor = 'pointer';
         backButton.textContent = '< Back';
@@ -70,11 +92,16 @@ export class Chat {
             this.renderUsers();
             this.currentReceiver = null;
         };
-        display.appendChild(backButton);
+        nameType.appendChild(userNickname)
+        nameType.appendChild(typingYN)
+        flexBackName.appendChild(backButton);
+        flexBackName.appendChild(nameType);
+        display.appendChild(flexBackName);
 
         const messagesDiv = document.createElement('div');
         messagesDiv.id = 'messages-display';
         display.appendChild(messagesDiv);
+        this.addMsgScrollingListener(messagesDiv)
 
         this.getMessages(idMessaged).then(data => {
             this.messages = data;
@@ -85,9 +112,10 @@ export class Chat {
         })
 
         const inputForm = document.createElement('form');
-        inputForm.innerHTML = `<input name="msg-input" type="text" placeholder="Type something..." />
-                               <button type="submit">AYO</button>`;
+        inputForm.innerHTML = `<input name="msg-input" id="msg-input" type="text" placeholder="Type something..." />
+                               <button type="submit">Send</button>`;
         inputForm.id = 'message-form';
+
         inputForm.addEventListener('submit', event => {
             event.preventDefault();
             const userForm = new FormData(inputForm);
@@ -101,26 +129,39 @@ export class Chat {
 
         });    
         display.appendChild(inputForm);
+        this.addTypingListener(document.getElementById('msg-input'))
 
     }
-    renderMessages(idMessaged, appended = false, scrolled = false){
 
+    renderMessages(idMessaged, appended = false, scrolled = false){
+        
         const messagesDiv =  document.getElementById('messages-display');
         if (appended){
             messagesDiv.appendChild(this.divMsg(idMessaged, this.messages[this.messages.length-1]));
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
             return;
         }
+        if (scrolled){
+            const limit = 15;
+            this.messages.slice(this.messages.length - limit, this.messages.length).forEach(msg => {
+                messagesDiv.prepend(this.divMsg(idMessaged, msg));
+            })
+            return;
+        }
+        messagesDiv.innerHTML = '';
 
         this.messages.slice().reverse().forEach(msg => {
             
             messagesDiv.appendChild(this.divMsg(idMessaged, msg));
         })
-        messagesDiv.scrollTop = messagesDiv.scrollHeight; //needs fixing
+        if (!scrolled){
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
     }
 
     divMsg(idMessaged, msgInfo) {
         const loadMsg = document.createElement('div');
-        const senderID = msgInfo.sender_id? msgInfo.sender_id: msgInfo.user_id
+        const senderID = msgInfo.sender_id
         if (senderID === idMessaged){
             loadMsg.classList.add('sMsg'); //sender message
         } else {
@@ -130,65 +171,57 @@ export class Chat {
         return loadMsg;
     }
 
-    addTypingListener() {
-        let isTyping = false;
-        let typingTimer = null;
-        let debounceDelay = 500;
-
-        function debouncedTypingStart() {
-            clearTimeout(typingTimer);
-            if (!isTyping) {
-                isTyping = true;
-                webSock.typing("start");
-            }
-            typingTimer = setTimeout(() => {
-                isTyping = false;
-                webSock.typing("stop");
-            }, debounceDelay);
-        }
-
-        this.input.addEventListener('input', debouncedTypingStart);
-
-        this.input.addEventListener('blur', () => {
-            clearTimeout(typingTimer);
-            if (isTyping) {
-                isTyping = false;
-                webSock.typing("stop");
-            }
-        });
-    }
-
-    userTyping(user_id, status) {
-        // TODO: Display user is typing
-    }
-
-    getMessages(user_id, limit = 10) {
-        return fetchAPI(`/messages?user_id=${user_id}&limit=${limit}`);
+    getMessages(user_id, limit = 15) {
+        return fetchAPI(`/messages?user_id=${user_id}&limit=${limit+this.messages.length}`);
     }
 
     receiveMessage(message) {
         let senderNick = "";
         this.users.forEach(user => {
-            if (user.id === message.user_id) {
+            if (user.id === message.sender_id) {
                 user.last_messaged_at = message.time;
                 senderNick = user.nickname;
             }
         })
 
-
-        if (this.currentReceiver?.id === message.user_id) {
+        if (this.currentReceiver?.id === message.sender_id) {
             this.messages.push(message);
             this.renderMessages(this.currentReceiver.id, true);
         } else {
-            console.log(message)
-            Toastr.info('New message from ' + senderNick);
+            this.throttleToastr(senderNick);
 
             if (!this.currentReceiver) {
                 this.renderUsers();
             }
         }
     }
+    
+    throttle(callback, delay = 1000){
+        let shouldWait = false;
+        let waitingArgs;
+        const timeoutFunc = () => {
+            if(waitingArgs == null){
+                shouldWait = false;
+            } else {
+                callback(...waitingArgs);
 
+                waitingArgs = null;
+                setTimeout(timeoutFunc, delay);
+            }
+        }
+
+        return (...args) => {
+            if (shouldWait){
+                waitingArgs = args;
+                return;
+            }
+            callback(...args);
+
+            shouldWait = true;
+
+            setTimeout(timeoutFunc, delay);
+        }
+    }
 
     sendMessage(content) {
         if (!this.currentReceiver) {
@@ -200,7 +233,6 @@ export class Chat {
         fetchAPI('/messages', 'POST', body).then(data => {
             this.messages.push(data);
             this.renderMessages(this.currentReceiver.id, true);
-            console.log(data);
             this.users.forEach(user => {
                 if (user.id === data.receiver_id) {
                     user.last_messaged_at = data.time;
@@ -214,16 +246,113 @@ export class Chat {
         });
     }
 
+    addMsgScrollingListener(msgDisplay){
+        let counter = 0;
+        let prevDivHeight;
+        
+        let throttleScrolling = this.throttle(()=> {
+            if (this.currentReceiver.id){
+                this.getMessages(this.currentReceiver.id).then(data => {
+                    if (this.messages.length !== data.length){
+                        prevDivHeight = msgDisplay.scrollHeight;
+                        this.messages = data;
+                        this.renderMessages(this.currentReceiver.id, false, true);
+                        msgDisplay.scrollTop = msgDisplay.scrollHeight - prevDivHeight - 20;
+                    } else{
+                        throttleScrolling = ()=> {}
+                    }
+                }).catch(err => {
+                    console.log(err)
+                    Toastr.error('Error getting Messages');
+                })
+            }
+
+        }, 250);
+
+       
+
+        msgDisplay.addEventListener("scroll", () =>{
+            if (msgDisplay.scrollTop === 0){
+                throttleScrolling();
+            }
+        })
+    }
+
+
+    addTypingListener(msgTextBox) {
+        let isTyping = false;        
+        let typingTimer;        
+        let debounceDelay = 500;  //time in ms
+
+        //on keyup, start the countdown
+        msgTextBox.addEventListener('input', () => {
+            clearTimeout(typingTimer);
+            if (!isTyping) {
+                isTyping = true;
+                webSock.typing("start");
+            } 
+            typingTimer = setTimeout(() => {
+                isTyping = false;
+                webSock.typing("stop");
+            }, debounceDelay);
+        
+        });
+
+    }
+
+    userTyping(user_id, status) {
+        // TODO: Display user is typing
+        if(!this.currentReceiver){
+            this.users?.forEach((user, ind) => {
+                
+                if (user.id === user_id) {
+                    const userInList = document.getElementById(`user-${ind}-lastMsg`);
+                    if (status ==="start") {
+                        userInList.classList.toggle('blacken');
+                        userInList.innerHTML = 'Typing...'.bold();
+
+                    } else if (status ==="stop"){
+                        userInList.classList.toggle('blacken');
+                        const time = user.last_messaged_at? new Date(user.last_messaged_at): null;
+                        userInList.innerHTML =  time? `Last Messaged ${timeSince(time)}`: `- Say hello`;
+                    }
+                }
+            })
+            return;
+        }
+        if(this.currentReceiver.id !== user_id){
+            return;
+        }
+
+        if (status === "start"){
+            this.enableTyping();
+        }
+        if(status === "stop"){
+            this.disableTyping();
+        }
+    }
+
+    disableTyping(){
+        const typeDiv = document.getElementById('typing-text-div');
+        typeDiv.style.display = 'none';
+    }
+    enableTyping(){
+        const typeDiv = document.getElementById('typing-text-div');
+        typeDiv.style.display = 'block';    
+    }
+
     removeChats() {
         this.users = [];
         this.messages = [];
         this.currentReceiver = null;
+        document.getElementById('chat-section').style.display = 'none';
 
         const display = document.getElementById('chat-display');
         if (display){
             display.innerHTML = '';
         };
     }
+
 }
 
 
