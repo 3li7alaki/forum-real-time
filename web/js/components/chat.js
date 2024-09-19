@@ -133,7 +133,7 @@ export class Chat {
 
     }
 
-    renderMessages(idMessaged, appended = false, scrolled = false){
+    renderMessages(idMessaged, appended = false, scrolled = false, range = 0){
         
         const messagesDiv =  document.getElementById('messages-display');
         if (appended){
@@ -142,8 +142,8 @@ export class Chat {
             return;
         }
         if (scrolled){
-            const limit = 15;
-            this.messages.slice(this.messages.length - limit, this.messages.length).forEach(msg => {
+        
+            this.messages.slice(this.messages.length - range).forEach(msg => {
                 messagesDiv.prepend(this.divMsg(idMessaged, msg));
             })
             return;
@@ -254,12 +254,13 @@ export class Chat {
             if (this.currentReceiver.id){
                 this.getMessages(this.currentReceiver.id).then(data => {
                     if (this.messages.length !== data.length){
+                        const range = data.length - this.messages.length
                         prevDivHeight = msgDisplay.scrollHeight;
                         this.messages = data;
-                        this.renderMessages(this.currentReceiver.id, false, true);
+                        this.renderMessages(this.currentReceiver.id, false, true, range);
                         msgDisplay.scrollTop = msgDisplay.scrollHeight - prevDivHeight - 20;
-                    } else{
-                        throttleScrolling = ()=> {}
+                    } else {
+                        throttleScrolling = () => {};
                     }
                 }).catch(err => {
                     console.log(err)

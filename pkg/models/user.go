@@ -488,7 +488,7 @@ func (u *User) UsersList() ([]*User, error) {
 }
 
 func (u *User) MessagesWith(userID int, limit int) ([]*Message, error) {
-	rows, err := DB.Query(`SELECT * FROM messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) ORDER BY time DESC LIMIT ?`, u.ID, userID, userID, u.ID, limit)
+	rows, err := DB.Query(`SELECT * FROM messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) ORDER BY id DESC LIMIT ?`, u.ID, userID, userID, u.ID, limit)
 	if err != nil {
 		return nil, err
 	}
