@@ -394,7 +394,7 @@ func (u *User) ModeratorRequests() ([]*User, error) {
 
 	for rows.Next() {
 		user := &User{}
-		err = rows.Scan(&user.ID, &user.Nickname, &user.Email, &user.Password, &user.Type, &user.Requested, &user.CreatedAt, &user.UpdatedAt)
+		err = rows.Scan(&user.ID, &user.Nickname, &user.Age, &user.Gender, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.Type, &user.Requested, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
