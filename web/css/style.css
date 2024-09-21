@@ -49,8 +49,16 @@ body {
 }
 
 #navigation {
+    /* display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; */
+    border:1 px solid black;
+    box-shadow: #111;
+    min-width: 150px;
+    max-width: 150px;
     height: 100%;
-    width: 300px;
+    width: 150px;
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
@@ -64,6 +72,11 @@ body {
 
 .nav-item {
     display: block;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-width: 110px;
+    max-width: 110px;
     background-color: var(--primary);
     border-radius: 15px;
     padding: 0.5rem;
@@ -82,10 +95,15 @@ body {
 
 .nav-item a {
     color: var(--secondary);
-    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
     width: 100%;
     text-decoration: none;
+    font-size: 15px;
 }
+
 
 .nav-item.active {
     background-color: var(--secondary);

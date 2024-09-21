@@ -309,11 +309,9 @@ export class Chat {
                 if (user.id === user_id) {
                     const userInList = document.getElementById(`user-${ind}-lastMsg`);
                     if (status ==="start") {
-                        userInList.classList.toggle('blacken');
-                        userInList.innerHTML = 'Typing...'.bold();
+                        userInList.innerHTML = '<b style="color:black;">Typing...</b>';
 
                     } else if (status ==="stop"){
-                        userInList.classList.toggle('blacken');
                         const time = user.last_messaged_at? new Date(user.last_messaged_at): null;
                         userInList.innerHTML =  time? `Last Messaged ${timeSince(time)}`: `- Say hello`;
                     }

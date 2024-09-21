@@ -1,6 +1,6 @@
 // main.js
 
-import {getAccessibleRoutes, navigate} from "../router.js";
+import {getAccessibleRoutes, routeIcons, navigate} from "../router.js";
 import {currentPage, currentUser} from "../state.js";
 import {NotificationComponent} from "../components.js";
 import Toastr from "../toastr.js";
@@ -27,7 +27,9 @@ export class Main {
 
             const a = document.createElement('a');
             a.href = '';
-            a.textContent = route.charAt(0).toUpperCase() + route.slice(1);
+            const navTo = route.charAt(0).toUpperCase() + route.slice(1);
+            a.innerHTML = routeIcons[route] + '\n<span class="nav-a-text">' + navTo + '</span>';
+            li.id = 'nav-' + navTo;
 
             switch (route) {
                 case 'logout':
