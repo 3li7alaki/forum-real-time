@@ -437,11 +437,24 @@ export class Post {
                 <input type="text" name="title" placeholder="Title" required>
                 <textarea name="body" placeholder="Body" required></textarea>
                 <input type="file" name="media">
-                ${this.categories.map(category => `<label><input type="checkbox" name="categories" value="${category.id}">${category.name}</label>`).join('')}
+                <div id="category-selection">${this.categories.map(category => `<label class="category-selection-label" for="category-option-${category.id}"><input type="checkbox" name="categories" class="category-selector-input" id="category-option-${category.id}" value="${category.id}">${category.name}</label>`).join('')}</div>
                 <button type="submit">Submit</button>
             </form>
         `;
         const form = document.getElementById('post-form');
+        const categoryInp = document.querySelectorAll('.category-selection-label');
+        
+        
+        const checkboxes = document.querySelectorAll("input[name=categories]");
+
+        checkboxes.forEach(checkbox => {checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                this.parentNode.style.borderStyle = "solid";
+            } else {
+                this.parentNode.style.borderStyle = "dashed";
+            }
+            });
+        });
 
         form.onsubmit = (event) => {
             event.preventDefault();
