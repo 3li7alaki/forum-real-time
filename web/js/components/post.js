@@ -42,7 +42,7 @@ export class Post {
                     button.onclick = () => this.filterPosts(category.id);
                     categoryButtons.appendChild(button);
                 });
-
+                
                 const cardContainer = document.createElement('div');
                 cardContainer.classList.add('card-container');
                 cardContainer.id = 'card-container';
@@ -225,7 +225,7 @@ export class Post {
         cardContent.classList.add('card-content');
         cardContent.innerHTML = `
                             <h1>${post.title}</h1>
-                            <p>${post.body.substring(0, 100)}...</p>
+                            <p>${post.body.substring(0, 100) < post.body? post.body.substring(0, 100) + '...': post.body}</p>
                             <button onclick="navigate('posts/${post.id}')">View Post</button>
                         `;
         card.appendChild(cardContent);
