@@ -22,7 +22,7 @@ export class Auth {
         this.content.innerHTML = `
         <h2>Login</h2>
         <form id="loginForm">
-          <input name="email" type="email" id="email" required placeholder="Email">
+          <input name="username" type="text" id="username" required placeholder="Username">
           <input name="password" type="password" id="password" required placeholder="Password">
           <div id="loginButtons">
           <button type="submit">Login</button>
@@ -55,10 +55,10 @@ export class Auth {
 
     async handleLogin(event) {
         event.preventDefault();
-        const email = document.getElementById('email').value;
+        const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         try {
-            const user = await fetchAPI('/login', 'POST', { email, password });
+            const user = await fetchAPI('/login', 'POST', { username, password });
             setCurrentUser(user);
             Toastr.success('Login successful');
             navigate(previousPage);

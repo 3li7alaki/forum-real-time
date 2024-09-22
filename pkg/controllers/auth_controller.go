@@ -24,12 +24,12 @@ func AuthController(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	email := r.FormValue("email")
+	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	user, err := models.GetUserByEmail(email)
+	user, err := models.GetUserByUsername(username)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "User does not exist", http.StatusBadRequest)
 		return
 	}
 

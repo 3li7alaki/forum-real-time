@@ -200,6 +200,13 @@ func GetUserByNickname(nickname string) (*User, error) {
 	return user, err
 }
 
+func GetUserByUsername(username string) (*User, error) {
+	user := &User{}
+	username = strings.TrimSpace(username)
+	err := DB.QueryRow(`SELECT * FROM users WHERE email LIKE ? OR nickname LIKE ?`, username, username).Scan(&user.ID, &user.Nickname, &user.Age, &user.Gender, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.Type, &user.Requested, &user.CreatedAt, &user.UpdatedAt)
+	return user, err
+}
+
 func (u *User) HideDetails() {
 	u.Password = ""
 	u.SessionUUID = ""
