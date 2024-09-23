@@ -75,15 +75,38 @@ func HandleSocks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Send the new user to all other clients
+	for id, c := range Clients {
+		if c.Conn != client.Conn {
+			// Send new users list
+			users, _ := UsersList(c.UserID)
+
+			message := Message{
+				Type:    "users",
+				Content: users,
+			}
+
+			err := c.Conn.WriteJSON(message)
+
+			if err != nil {
+				log.Printf("Error writing register message: %v", err)
+				Disconnect <- c
+				ClientsMutex.Lock()
+				delete(Clients, id)
+				ClientsMutex.Unlock()
+			}
+		}
+	}
+
 	// Listen for messages from this client
 	for {
 		var msg Message
 		err := ws.ReadJSON(&msg)
 		if err != nil {
 			log.Printf("Error reading message: %v", err)
+			Disconnect <- client
 			ClientsMutex.Lock()
 			delete(Clients, client.UserID)
-			Disconnect <- client
 			ClientsMutex.Unlock()
 			break
 		}
@@ -111,9 +134,9 @@ func HandleMessages() {
 			err := client.Conn.WriteJSON(msg)
 			if err != nil {
 				log.Printf("Error writing message: %v", err)
+				Disconnect <- client
 				ClientsMutex.Lock()
 				delete(Clients, client.UserID)
-				Disconnect <- client
 				ClientsMutex.Unlock()
 			}
 		}
@@ -138,9 +161,9 @@ func HandleRegister() {
 
 				if err != nil {
 					log.Printf("Error writing register message: %v", err)
+					Disconnect <- c
 					ClientsMutex.Lock()
 					delete(Clients, id)
-					Disconnect <- c
 					ClientsMutex.Unlock()
 				}
 			}
@@ -164,9 +187,9 @@ func HandleTyping() {
 
 				if err != nil {
 					log.Printf("Error writing typing message: %v", err)
+					Disconnect <- client
 					ClientsMutex.Lock()
 					delete(Clients, id)
-					Disconnect <- client
 					ClientsMutex.Unlock()
 				}
 			}
@@ -181,7 +204,7 @@ func HandleDisconnect() {
 		for id, c := range Clients {
 			if c.Conn != client.Conn {
 				// Send new users list
-				users, _ := UsersList(client.UserID)
+				users, _ := UsersList(c.UserID)
 
 				message := Message{
 					Type:    "users",
@@ -192,9 +215,9 @@ func HandleDisconnect() {
 
 				if err != nil {
 					log.Printf("Error writing disconnect message: %v", err)
+					Disconnect <- c
 					ClientsMutex.Lock()
 					delete(Clients, id)
-					Disconnect <- c
 					ClientsMutex.Unlock()
 				}
 			}

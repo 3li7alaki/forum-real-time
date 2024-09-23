@@ -3,7 +3,6 @@
 
 import {webSock} from "../websock.js";
 import {fetchAPI} from "../api.js";
-import { currentUser } from "../state.js";
 import { timeSince } from "../utils.js";
 import Toastr from "../toastr.js";
 
@@ -14,7 +13,6 @@ export class Chat {
         this.messages = [];
         this.currentReceiver = null;
         this.messagesDiv = null;
-        // this.addTypingListener();
         this.throttleToastr = this.throttle((userSending) => {
             Toastr.info('New message from ' + userSending);
         }, 1500);
@@ -28,7 +26,7 @@ export class Chat {
     renderUsers() {
         this.messages = [];
         this.currentReceiver = null;
-        this.users = this.users.sort((a, b) => {
+        this.users = this.users?.sort((a, b) => {
             return new Date(b.last_messaged_at) - new Date(a.last_messaged_at);
         });
         document.getElementById('chat-section').style.display = 'flex';

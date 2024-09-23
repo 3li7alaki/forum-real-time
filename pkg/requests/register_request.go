@@ -6,7 +6,7 @@ func RegisterRequest(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rules := Rules{
 			"nickname":   {"required", "min:3", "max:20", "unique:users,nickname"},
-			"age":        {"required", "integer", "min:13", "max:99"},
+			"age":        {"required", "integer", "greater:12", "less:99"},
 			"gender":     {"required", "in:Male,Female"},
 			"first_name": {"required", "min:3", "max:20"},
 			"last_name":  {"required", "min:3", "max:20"},
