@@ -179,7 +179,7 @@ export class Chat {
         return loadMsg;
     }
 
-    getMessages(user_id, limit = 15) {
+    getMessages(user_id, limit = 10) {
         return fetchAPI(`/messages?user_id=${user_id}&limit=${limit+this.messages.length}`);
     }
 
