@@ -77,7 +77,6 @@ export class WebSock {
             time: new Date().toJSON(),
             receiver_id: receiverID
         }));
-
     }
 
     register() {
@@ -85,11 +84,28 @@ export class WebSock {
             return;
         }
 
-        this.socket.send(JSON.stringify({
+        this.send(JSON.stringify({
             type: 'register',
             content: '',
             sender_id: currentUser.id
         }));
+    }
+
+    send(message) {
+        this.waitForConnection(function () {
+            this.socket.send(message);
+        }, 1000);
+    }
+
+    waitForConnection(callback, interval) {
+        if (this.socket.readyState === 1) {
+            callback();
+        } else {
+            var that = this;
+            setTimeout(function () {
+                that.waitForConnection(callback, interval);
+            }, interval);
+        }
     }
 }
 
