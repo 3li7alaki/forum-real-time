@@ -5,6 +5,7 @@ import (
 	"forum/pkg/models"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -45,7 +46,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	age, _ := strconv.Atoi(r.FormValue("age"))
 
 	user := &models.User{
-		Nickname:  r.FormValue("nickname"),
+		Nickname:  strings.ToLower(r.FormValue("nickname")),
 		Age:       age,
 		Gender:    r.FormValue("gender"),
 		FirstName: r.FormValue("first_name"),

@@ -454,7 +454,7 @@ func (u *User) UsersList() ([]*User, error) {
     GROUP BY 
         u.id
     ORDER BY 
-        last_messaged_at DESC NULLS LAST, u.nickname
+        last_messaged_at DESC NULLS LAST, LOWER(u.nickname)
     `
 
 	rows, err := DB.Query(query, u.ID, u.ID, u.ID)

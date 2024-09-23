@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func ProfileController(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +41,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	age, _ := strconv.Atoi(r.FormValue("age"))
 
-	user.Nickname = r.FormValue("nickname")
+	user.Nickname = strings.ToLower(r.FormValue("nickname"))
 	user.Age = age
 	user.Gender = r.FormValue("gender")
 	user.FirstName = r.FormValue("first_name")
