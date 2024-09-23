@@ -866,6 +866,22 @@ button:disabled {
     background-color: var(--secondary);
     margin-top: 2px;
 }
+.texted-msg {
+
+}
+.texted-date {
+    color:#9f9d9d;
+    font-size: smaller;
+    width:fit-content;
+}
+.mDaty {
+    margin-left: auto;
+    text-shadow: none;
+}
+.sDaty {
+    margin-right: auto;
+}
+
 
 #message-form{
     display: flex;

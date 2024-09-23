@@ -159,13 +159,23 @@ export class Chat {
 
     divMsg(idMessaged, msgInfo) {
         const loadMsg = document.createElement('div');
-        const senderID = msgInfo.sender_id
+        const senderID = msgInfo.sender_id;
+        const msgContentDiv = document.createElement('div');
+        const dateOfMsg = document.createElement('div');
+        msgContentDiv.textContent = msgInfo.content;
+        dateOfMsg.textContent = new Date(msgInfo.time).toLocaleString();
+        msgContentDiv.classList.add('texted-msg');
+        dateOfMsg.classList.add('texted-date');
         if (senderID === idMessaged){
             loadMsg.classList.add('sMsg'); //sender message
+            dateOfMsg.classList.add('sDaty');
         } else {
             loadMsg.classList.add('mMsg'); //my message
+            dateOfMsg.classList.add('mDaty');
         }
-        loadMsg.textContent = msgInfo.content;
+
+        loadMsg.appendChild(msgContentDiv);
+        loadMsg.appendChild(dateOfMsg);
         return loadMsg;
     }
 
