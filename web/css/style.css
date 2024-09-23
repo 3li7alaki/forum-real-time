@@ -754,6 +754,7 @@ button:disabled {
     color: rgb(47, 20, 20);
     display: flex;
     align-items: center;
+    justify-content: space-between;
     transition: all 0.5s;
 
 }
