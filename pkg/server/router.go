@@ -27,4 +27,5 @@ func StartRouter() {
 	go HandleRegister()
 	go HandleMessages()
 	go HandleTyping()
+	go HandleDisconnect()
 }

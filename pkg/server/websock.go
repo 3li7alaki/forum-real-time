@@ -30,12 +30,13 @@ type Message struct {
 	Time       string      `json:"time"`
 }
 
-var Clients = make(map[*websocket.Conn]*Client)
+var Clients = make(map[int]*Client)
 var ClientsMutex = sync.Mutex{}
 
 var Register = make(chan *Client)
 var Messages = make(chan Message)
 var Typing = make(chan Message)
+var Disconnect = make(chan *Client)
 
 func HandleSocks(w http.ResponseWriter, r *http.Request) {
 	ws, err := Upgrader.Upgrade(w, r, nil)
@@ -58,7 +59,7 @@ func HandleSocks(w http.ResponseWriter, r *http.Request) {
 
 	client.UserID = userIDMessage.SenderID
 	ClientsMutex.Lock()
-	Clients[ws] = client
+	Clients[client.UserID] = client
 	ClientsMutex.Unlock()
 
 	// Send the users list to the new client
@@ -81,7 +82,8 @@ func HandleSocks(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("Error reading message: %v", err)
 			ClientsMutex.Lock()
-			delete(Clients, ws)
+			delete(Clients, client.UserID)
+			Disconnect <- client
 			ClientsMutex.Unlock()
 			break
 		}
@@ -104,15 +106,15 @@ func HandleMessages() {
 	for {
 		msg := <-Messages
 
-		for conn, client := range Clients {
-			if client.UserID == msg.ReceiverID {
-				err := conn.WriteJSON(msg)
-				if err != nil {
-					log.Printf("Error writing message: %v", err)
-					ClientsMutex.Lock()
-					delete(Clients, conn)
-					ClientsMutex.Unlock()
-				}
+		client, ok := Clients[msg.ReceiverID]
+		if ok {
+			err := client.Conn.WriteJSON(msg)
+			if err != nil {
+				log.Printf("Error writing message: %v", err)
+				ClientsMutex.Lock()
+				delete(Clients, client.UserID)
+				Disconnect <- client
+				ClientsMutex.Unlock()
 			}
 		}
 	}
@@ -122,8 +124,8 @@ func HandleRegister() {
 	for {
 		client := <-Register
 
-		for conn := range Clients {
-			if conn != client.Conn {
+		for id, c := range Clients {
+			if c.Conn != client.Conn {
 				// Send new users list
 				users, _ := UsersList(client.UserID)
 
@@ -132,12 +134,13 @@ func HandleRegister() {
 					Content: users,
 				}
 
-				err := conn.WriteJSON(message)
+				err := c.Conn.WriteJSON(message)
 
 				if err != nil {
 					log.Printf("Error writing register message: %v", err)
 					ClientsMutex.Lock()
-					delete(Clients, conn)
+					delete(Clients, id)
+					Disconnect <- c
 					ClientsMutex.Unlock()
 				}
 			}
@@ -149,7 +152,7 @@ func HandleTyping() {
 	for {
 		msg := <-Typing
 
-		for conn, client := range Clients {
+		for id, client := range Clients {
 			if client.UserID != msg.SenderID {
 				message := Message{
 					Type:     "typing",
@@ -157,12 +160,41 @@ func HandleTyping() {
 					SenderID: msg.SenderID,
 				}
 
-				err := conn.WriteJSON(message)
+				err := client.Conn.WriteJSON(message)
 
 				if err != nil {
 					log.Printf("Error writing typing message: %v", err)
 					ClientsMutex.Lock()
-					delete(Clients, conn)
+					delete(Clients, id)
+					Disconnect <- client
+					ClientsMutex.Unlock()
+				}
+			}
+		}
+	}
+}
+
+func HandleDisconnect() {
+	for {
+		client := <-Disconnect
+
+		for id, c := range Clients {
+			if c.Conn != client.Conn {
+				// Send new users list
+				users, _ := UsersList(client.UserID)
+
+				message := Message{
+					Type:    "users",
+					Content: users,
+				}
+
+				err := c.Conn.WriteJSON(message)
+
+				if err != nil {
+					log.Printf("Error writing disconnect message: %v", err)
+					ClientsMutex.Lock()
+					delete(Clients, id)
+					Disconnect <- c
 					ClientsMutex.Unlock()
 				}
 			}
@@ -184,6 +216,14 @@ func UsersList(id int) ([]*models.User, error) {
 	users, err := user.UsersList()
 	if err != nil {
 		return nil, err
+	}
+
+	for _, u := range users {
+		if _, ok := Clients[u.ID]; ok {
+			u.Online = true
+		} else {
+			u.Online = false
+		}
 	}
 
 	return users, nil

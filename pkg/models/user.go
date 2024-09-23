@@ -28,6 +28,8 @@ type User struct {
 
 	SessionUUID    string     `json:"session_uuid"`
 	LastMessagedAt *time.Time `json:"last_messaged_at"`
+
+	Online bool `json:"online"`
 }
 
 func (u *User) CreateTable() error {
