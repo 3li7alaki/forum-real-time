@@ -43,8 +43,8 @@ export class Chat {
             const time = user.last_messaged_at? new Date(user.last_messaged_at): null;
             const displayMsg = time? `Last Messaged ${timeSince(time)}`: `- Say hello`;
             userDiv.classList.add("listDiv");
-            userDiv.innerHTML = `<div class="nicknameInList" id="user-${user.id}-nickname"><span class="nickListSpan">${nickname}</span> <span class="onOrOffInList">${user.online? "🟢 online": "⚫ offline"}</span></div>
-                                <div class="lastMessagedInList" id="user-${user.id}-lastMsg">${displayMsg}</div>`;
+            userDiv.innerHTML = `<div class="nicknameInList" id="user-${ind}-nickname"><span class="nickListSpan">${nickname}</span> <span class="onOrOffInList">${user.online? "🟢 online": "⚫ offline"}</span></div>
+                                <div class="lastMessagedInList" id="user-${ind}-lastMsg">${displayMsg}</div>`;
             usersList.appendChild(userDiv);
 
             userDiv.onclick = () => {
