@@ -176,7 +176,7 @@ func HandleTyping() {
 		msg := <-Typing
 
 		for id, client := range Clients {
-			if client.UserID != msg.SenderID {
+			if client.UserID != msg.SenderID && msg.ReceiverID == client.UserID {
 				message := Message{
 					Type:     "typing",
 					Content:  msg.Content,

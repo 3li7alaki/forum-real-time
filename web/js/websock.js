@@ -53,7 +53,7 @@ export class WebSock {
         this.socket = null;
     }
 
-    typing(status) {
+    typing(status, recID) {
         if (!currentUser) {
             return;
         }
@@ -61,7 +61,8 @@ export class WebSock {
         this.socket.send(JSON.stringify({
             type: 'typing',
             content: status,
-            sender_id: currentUser.id
+            sender_id: currentUser.id,
+            receiver_id: recID
         }));
     }
 

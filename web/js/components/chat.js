@@ -20,7 +20,9 @@ export class Chat {
 
     setUsers(users) {
         this.users = users;
-        this.renderUsers();
+        if (!this.currentReceiver){
+            this.renderUsers();
+        }
     }
 
     renderUsers() {
@@ -298,11 +300,11 @@ export class Chat {
             clearTimeout(typingTimer);
             if (!isTyping) {
                 isTyping = true;
-                webSock.typing("start");
+                webSock.typing("start", this.currentReceiver.id);
             } 
             typingTimer = setTimeout(() => {
                 isTyping = false;
-                webSock.typing("stop");
+                webSock.typing("stop", this.currentReceiver.id);
             }, debounceDelay);
         
         });
@@ -313,7 +315,6 @@ export class Chat {
         // TODO: Display user is typing
         if(!this.currentReceiver){
             this.users?.forEach((user, ind) => {
-                
                 if (user.id === user_id) {
                     const userInList = document.getElementById(`user-${ind}-lastMsg`);
                     if (status ==="start") {
